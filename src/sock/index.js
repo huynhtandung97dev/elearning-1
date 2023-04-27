@@ -1,11 +1,12 @@
 const socketio = require("socket.io");
 const Group = require("../model/group");
+const webs = require("ws");
 
 let io;
 
 function createSock(ws) {
     io = new socketio.Server(ws, {
-        wsEngine: "ws",
+        wsEngine: webs.Server,
         cors: {
             origin: ["https://elearning.gdvietnam.com", "http://localhost:3031"],
         },
