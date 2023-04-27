@@ -7,6 +7,9 @@
     "dev": "nodemon ./src/bin/www.js",
     "beauty": "prettier --print-width 60 --write ."
   },
+  "engines" : { 
+    "node" : ">=14.20.1" 
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

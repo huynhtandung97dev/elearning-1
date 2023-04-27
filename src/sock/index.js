@@ -10,6 +10,81 @@ function createSock(ws) {
     },
   });
 
+  io.on("connection", (socket) => {
+    console.log("a socket connected", socket.id);
+
+    socket.on("join-room", (roomId) => {
+      console.log("Join room event: ", socket.id, roomId);
+      socket.join(roomId);
+    });
+
+    socket.on("leave-room", (roomId) => {
+      socket.leave(roomId);
+    });
+
+    socket.on("on-stream", async (roomId) => {
+      try {
+        const group = await Group.findByIdAndUpdate(
+          roomId,
+          {
+            $set: {
+              isStream: true,
+            },
+          },
+          {
+            new: true,
+          }
+        );
+        if (!group) {
+          socket.emit("error", "Nhóm không tồn tại");
+        }
+
+        if (group.isStream) {
+          io.to(group._id.toString()).emit(
+            "on-stream",
+            group
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        socket.emit("error", "Có lỗi xảy ra");
+      }
+    });
+
+    socket.on("off-stream", async (roomId) => {
+      try {
+        const group = await Group.findByIdAndUpdate(
+          roomId,
+          {
+            $set: {
+              isStream: false,
+            },
+          },
+          {
+            new: true,
+          }
+        );
+        if (!group) {
+          socket.emit("error", "Nhóm không tồn tại");
+        }
+
+        if (!group.isStream) {
+          io.to(group._id.toString()).emit(
+            "off-stream",
+            group
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        socket.emit("error", "Có lỗi xảy ra");
+      }
+    });
+
+    socket.on("disconnect", () => {
+      console.log("a socket disconnected", socket.id);
+    });
+  });
+
   console.log("Socket is starting!!!");
 
   const course = io.of("/course");
@@ -85,81 +160,6 @@ function createSock(ws) {
     socket.on("disconnect", () => {
       console.log("/stream socket disconnected", socket.id);
       members = members.filter((m) => m[0] !== socket.id);
-    });
-  });
-
-  io.on("connection", (socket) => {
-    console.log("a socket connected", socket.id);
-
-    socket.on("join-room", (roomId) => {
-      console.log("Join room event: ", socket.id, roomId);
-      socket.join(roomId);
-    });
-
-    socket.on("leave-room", (roomId) => {
-      socket.leave(roomId);
-    });
-
-    socket.on("on-stream", async (roomId) => {
-      try {
-        const group = await Group.findByIdAndUpdate(
-          roomId,
-          {
-            $set: {
-              isStream: true,
-            },
-          },
-          {
-            new: true,
-          }
-        );
-        if (!group) {
-          socket.emit("error", "Nhóm không tồn tại");
-        }
-
-        if (group.isStream) {
-          io.to(group._id.toString()).emit(
-            "on-stream",
-            group
-          );
-        }
-      } catch (err) {
-        console.log(err);
-        socket.emit("error", "Có lỗi xảy ra");
-      }
-    });
-
-    socket.on("off-stream", async (roomId) => {
-      try {
-        const group = await Group.findByIdAndUpdate(
-          roomId,
-          {
-            $set: {
-              isStream: false,
-            },
-          },
-          {
-            new: true,
-          }
-        );
-        if (!group) {
-          socket.emit("error", "Nhóm không tồn tại");
-        }
-
-        if (!group.isStream) {
-          io.to(group._id.toString()).emit(
-            "off-stream",
-            group
-          );
-        }
-      } catch (err) {
-        console.log(err);
-        socket.emit("error", "Có lỗi xảy ra");
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("a socket disconnected", socket.id);
     });
   });
 }
