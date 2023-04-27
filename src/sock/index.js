@@ -8,7 +8,8 @@ function createSock(ws) {
     io = new socketio.Server(ws, {
         wsEngine: webs.Server,
         cors: {
-            origin: ["https://elearning.gdvietnam.com", "http://localhost:3031"],
+            origin: "*",
+            // origin: ["https://elearning.gdvietnam.com", "http://localhost:3031"],
         },
     });
 
