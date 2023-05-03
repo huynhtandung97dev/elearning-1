@@ -13,6 +13,7 @@ async function deleteTest(req, res, next) {
         await Test.findByIdAndDelete(test._id);
 
         for await (const s of test.submissions) {
+            console.log("submission nè: ", s);
             await Submission.findByIdAndDelete(s);
         }
 

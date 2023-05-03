@@ -16,7 +16,7 @@ async function changeTest(req, res, next) {
         });
 
         //check member đã được thêm submission chưa, nếu chưa tiến hành add
-        for await (const m of test.members) {
+        for await (const m of req.body.memberIds) {
             const newSubmission = new Submission({
                 user: m,
                 test: test.id,
@@ -26,9 +26,9 @@ async function changeTest(req, res, next) {
 
             // Thêm bài nộp vào bài kiểm tra để tiện populate
             await test.updateOne({
-                ...req.body,
-                members: req.body.memberIds,
-                class: req.body.classId,
+                $addToSet: {
+                    submissions: newSubmission.id,
+                },
             });
         }
 
